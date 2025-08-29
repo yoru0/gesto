@@ -4,29 +4,29 @@ import mediapipe as mp
 
 cap = cv2.VideoCapture(0)
 
-mpHands = mp.solutions.hands
-hands   = mpHands.Hands()
-mpDraw  = mp.solutions.drawing_utils
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands()
+mp_draw = mp.solutions.drawing_utils
 
-prevTime = 0
+prev_time = 0
 
 while True:
-    ok, img = cap.read()
+    success, img = cap.read()
     img = cv2.flip(img, 1)
-    imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    results = hands.process(imgRGB)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    results = hands.process(img_rgb)
 
     if results.multi_hand_landmarks:
-        for hand in results.multi_hand_landmarks:
-            for id, lm in enumerate(hand.landmark):
-                h, w, c = img.shape
-                cx, cy = int(lm.x * w), int(lm.y * h)
+        for hand_landmarks in results.multi_hand_landmarks:
+            for id, lm in enumerate(hand_landmarks.landmark):
+                height, width, channels = img.shape
+                cx, cy = int(lm.x * width), int(lm.y * height)
 
-            mpDraw.draw_landmarks(img, hand, mpHands.HAND_CONNECTIONS)
+            mp_draw.draw_landmarks(img, hand_landmarks, mp_hands.HAND_CONNECTIONS)
 
-    currTime = time.time()
-    fps = 1 / (currTime - prevTime)
-    prevTime = currTime
+    curr_time = time.time()
+    fps = 1 / (curr_time - prev_time)
+    prev_time = curr_time
 
     cv2.putText(img, str(int(fps)), (10, 35), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 0), 1)
 
