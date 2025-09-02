@@ -5,15 +5,17 @@ import hand_tracking_module as htm
 
 # Tunables
 CAM_W, CAM_H    = 640, 480
-HIST            = 3
-CONF_THRESH     = 0.65
-FIST_TO_OPEN_MS = 900
-SWIPE_PIXELS    = 100
-SWIPE_WINDOW_MS = 220
-COOLDOWN_MS     = 500
+HIST            = 3             # History length for gesture smoothing
+COOLDOWN_MS     = 500           # Cooldown time between gestures
+CONF_THRESH     = 0.65          # Confidence threshold for gesture recognition
+SWIPE_PIXELS    = 100           # Minimum pixels for swipe gesture
+SWIPE_WINDOW_MS = 220           # Time window for swipe gesture
+FIST_TO_OPEN_MS = 900           # Transition time from fist to open hand
 
-TIP_IDS = [4, 8, 12, 16, 20]  # Thumb, Index, Middle, Ring, Pinky
+# Finger IDs
+TIP_IDS = [4, 8, 12, 16, 20]    # Thumb, Index, Middle, Ring, Pinky
 PIP_IDS = [3, 6, 10, 14, 18]
+
 
 def fingers_up(lm_list, hand_label: str):
     pts = {i:(x, y) for (i, x, y) in lm_list}
@@ -39,7 +41,7 @@ def fingers_up(lm_list, hand_label: str):
 
 def classify_gesture(lm_list, hand_label: str):
     xs = [x for (_, x, _) in lm_list]
-    cx = int(sum(xs)/len(xs)) if xs else None
+    cx = int(sum(xs) / len(xs)) if xs else None
 
     up, conf = fingers_up(lm_list, hand_label)
 
@@ -50,8 +52,8 @@ def classify_gesture(lm_list, hand_label: str):
         return "open_palm", max(0.5, conf), cx
 
     if sum(up[1:]) == 0:
-        return "fist", max(0.5, 1.0 - conf/1.2), cx
-    
+        return "fist", max(0.5, 1.0 - conf / 1.2), cx
+
     return None, 0.0, cx
 
 
@@ -99,17 +101,17 @@ def main():
 
         if cx is not None:
             recent_positions.append((t_ms, cx))
-        
+
         while recent_positions and t_ms - recent_positions[0][0] > SWIPE_WINDOW_MS:
             recent_positions.popleft()
 
         stable = False
         avg_conf = 0.0
         if len(history) == history.maxlen:
-            labels = [l for (l,_,_) in history]
-            confs  = [c for (l,c,_) in history if l]
+            labels = [l for (l, _, _) in history]
+            confs  = [c for (l, c, _) in history if l]
             stable = (labels.count(labels[-1]) == len(labels) and labels[-1] is not None)
-            avg_conf = (sum(confs)/len(confs)) if confs else 0.0
+            avg_conf = (sum(confs) / len(confs)) if confs else 0.0
 
         if label == "fist":
             last_state, last_state_time = "fist", t_ms
