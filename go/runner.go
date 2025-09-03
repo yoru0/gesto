@@ -39,7 +39,7 @@ func RunRecognizer(ctx context.Context, cfg Config, onEvent func(Event), onStder
 		return fmt.Errorf("failed to start recognizer process: %w", err)
 	}
 
-	// Handle stderr in a separate goroutine
+	// Handle stderr
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -85,7 +85,6 @@ func RunRecognizer(ctx context.Context, cfg Config, onEvent func(Event), onStder
 		onStderr(fmt.Sprintf("stdout scanner error: %v", err))
 	}
 
-	// Wait for the process to finish
 	if err := cmd.Wait(); err != nil {
 		return fmt.Errorf("recognizer process failed: %w", err)
 	}
